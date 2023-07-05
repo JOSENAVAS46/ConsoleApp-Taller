@@ -9,14 +9,20 @@ class Program
 
         while (continuar)
         {
-            Console.WriteLine("----- Menú Principal -----");
-            Console.WriteLine("1. Agregar cliente");
-            Console.WriteLine("2. Consultar clientes");
-            Console.WriteLine("3. Consultar cliente por Id");
-            Console.WriteLine("4. Modificar cliente");
-            Console.WriteLine("5. Eliminar cliente");
-            Console.WriteLine("0. Salir");
-            Console.Write("Ingrese una opción: ");
+            string menuPrincipalCliente = 
+                    "----- Menú Principal -----\n" +
+                      "1. Agregar cliente\n" +
+                      "2. Consultar clientes\n" +
+                      "3. Consultar cliente por Id\n" +
+                      "4. Modificar cliente\n" +
+                      "5. Eliminar cliente\n" +
+                      "0. Salir\n" +
+                      "Ingrese una opción:";
+
+            //Console.WriteLine(menuPrincipalCliente);
+
+            AgregarMascota();
+
             string opcion = Console.ReadLine();
 
             switch (opcion)
@@ -209,4 +215,85 @@ class Program
             }
         }
     }
+
+    public static void AgregarMascota()
+    {
+        Console.WriteLine("----- Agregar Mascota -----");
+
+        Mascota mascota = new Mascota();
+        Cliente propietario = new Cliente();
+        CitaMedica citaMedica = new CitaMedica();
+
+        Console.Write("Nombre de la mascota: ");
+        mascota.Nombre = Console.ReadLine();
+
+        Console.Write("Especie de la mascota: ");
+        mascota.Especie = Console.ReadLine();
+
+        Console.Write("Edad de la mascota: ");
+        mascota.Edad = int.Parse(Console.ReadLine());
+
+        Console.Write("Nombre del propietario: ");
+        propietario.Nombre = Console.ReadLine();
+
+        Console.Write("Apellido del propietario: ");
+        propietario.Apellido = Console.ReadLine();
+
+        Console.Write("Dirección del propietario: ");
+        propietario.Direccion = Console.ReadLine();
+
+        Console.Write("Teléfono del propietario: ");
+        propietario.Telefono = Console.ReadLine();
+
+        Console.Write("Fecha de Nacimiento del propietario (yyyy-mm-dd): ");
+        propietario.FechaNacimiento = DateTime.Parse(Console.ReadLine());
+
+        Console.Write("Estado del propietario: ");
+        propietario.Estado = Console.ReadLine()[0];
+
+        Console.Write("Fecha de la cita médica (yyyy-mm-dd): ");
+        citaMedica.Fecha = DateTime.Parse(Console.ReadLine());
+
+        Console.Write("Descripción de la cita médica: ");
+        citaMedica.Descripcion = Console.ReadLine();
+
+
+        using (var context = new AppDbContext())
+        {
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                try
+                {
+                    // Guardar propietario
+                    context.Clientes.Add(propietario);
+                    context.SaveChanges();
+
+                    // Asignar propietario a la mascota
+                    mascota.Propietario = propietario;
+
+                    // Guardar mascota
+                    context.Mascotas.Add(mascota);
+                    context.SaveChanges();
+
+                    // Asignar mascota a la cita médica
+                    citaMedica.Mascota = mascota;
+
+                    // Guardar cita médica
+                    context.CitasMedicas.Add(citaMedica);
+                    context.SaveChanges();
+
+                    transaction.Commit();
+
+                    Console.WriteLine("Mascota y datos relacionados guardados correctamente.");
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    Console.WriteLine("Error al guardar los datos: " + ex.Message);
+                }
+            }
+        }
+    }
+
+
 }
